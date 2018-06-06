@@ -21,16 +21,27 @@
 			<i class="el-icon-arrow-left back" @click="toBack"></i>
 			<div class="register"></div>
 			<div class="form-item">
-				<input class="username" autocomplete="off" type="text" placeholder="用户名" v-model="register.username">
+				<el-tooltip class="item" effect="light" content="6-16位字符，可用数字、字母、_" placement="right">
+					<input class="username" autocomplete="off" type="text" placeholder="用户名" v-model="register.username">
+				</el-tooltip>
 				<p class="tip">用户名</p>
 			</div>
 			<div class="form-item">
-				<input class="password" autocomplete="off" type="password" placeholder="密码" v-model="register.password">
+				<el-tooltip class="item" effect="light" content="6-16位字符，可用数字、字母、_" placement="right">
+					<input class="password" autocomplete="off" type="password" placeholder="密码" v-model="register.password">
+				</el-tooltip>
 				<p class="tip">密码</p>
 			</div>
 			<div class="form-item">
-				<input class="password" autocomplete="off" type="password" placeholder="再次输入密码" v-model="register.password_again">
+				<el-tooltip class="item" effect="light" content="再次输入密码" placement="right">
+					<input class="password" autocomplete="off" type="password" placeholder="再次输入密码" v-model="register.password_again">
+				</el-tooltip>
 				<p class="tip">再次输入密码</p>
+			</div>
+			<div class="form-item">
+				<input class="proof" autocomplete="off" type="text" style="width:180px" v-model="register.proof_code">
+				<img :src="captchaSrc" style="width: 100px;height: 50px;background: #fff;vertical-align: middle;margin-left:30px;" @click="refreshFn">
+				<p class="tip">请输入验证码</p>
 			</div>
 			<div class="form-item">
 				<button id="submit" autocomplete="off" :class="[{rubberBand: flagBoolean.loginShow}, 'animated']" @click="registerFn">注 册</button>
@@ -49,13 +60,15 @@
 					backShow: false,
 					Show: false
 				},
+				captchaSrc: 'http://127.0.0.1:3000/captcha',
 				username: null,
 				password: null,
 				login: true,
 				register: {
 					username: null,
 					password: null,
-					password_again: null
+					password_again: null,
+					proof_code: null
 				}
 			};
 		},
@@ -90,6 +103,15 @@
 					this.flagBoolean.registerShow = false;
 					this.login = false;
 				}, 1000);
+			},
+
+			checkFn() {
+				let data = this.register;
+				// if(data.username)
+			},
+
+			refreshFn() {
+				this.captchaSrc = 'http://127.0.0.1:3000/captcha?d=' + Math.random();
 			}
 		},
 	};
@@ -124,7 +146,7 @@
 			.register {
 				width: 104px;
 				height: 104px;
-				margin: 50px auto 80px;
+				margin: 20px auto 20px;
 				background: url(../assets/images/register.png) 0 0 no-repeat;
 			}
 			.form-item {
@@ -161,6 +183,9 @@
 			}
 			.password {
 				background: url(../assets/images/password.png) 23px 11px no-repeat;
+			}
+			.proof{
+				background: url(../assets/images/proof.png) 23px 11px no-repeat;	
 			}
 			.tip {
 				display: none;
