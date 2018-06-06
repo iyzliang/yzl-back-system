@@ -51,6 +51,7 @@
 </template>
 
 <script>
+	import Api from '../api/index.js';
 	export default {
 		data() {
 			return {
@@ -60,7 +61,7 @@
 					backShow: false,
 					Show: false
 				},
-				captchaSrc: 'http://127.0.0.1:3000/captcha',
+				captchaSrc: '/api/captcha',
 				username: null,
 				password: null,
 				login: true,
@@ -107,11 +108,15 @@
 
 			checkFn() {
 				let data = this.register;
-				// if(data.username)
+				if(data.username) {
+					if(data.username.length < 6 || data.username.length > 16) {
+						
+					}
+				}
 			},
 
 			refreshFn() {
-				this.captchaSrc = 'http://127.0.0.1:3000/captcha?d=' + Math.random();
+				this.captchaSrc = '/api/captcha?d=' + Math.random();
 			}
 		},
 	};

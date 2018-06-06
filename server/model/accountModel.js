@@ -11,6 +11,6 @@ accountScheam.statics.findUser = function (user, callback) {
   return this.model('Account').find({username: user}, callback);
 };
 
-var accountModel = db.model('Account', accountSchema);
+var accountModel = db.model('Account', accountScheam);
 
 module.exports = accountModel;

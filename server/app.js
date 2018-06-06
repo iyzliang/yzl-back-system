@@ -10,21 +10,32 @@ var express = require('express'),
 app.use(bodyParser.urlencoded({extended: false}));
 
 app.use(session({
-  secret: 'love',
+  secret: 'yzlblog',
   resave: false,
   saveUninitialized: true
 }));
 
-app.use(expressJWT({
+app.use('/api', expressJWT({
   secret: secretOrPrivateKey   
 }).unless({
-  path: ['/api/login', '/frontend/']  //除了这个地址，其他的URL都需要验证
+  path: ['/api/register_blog', '/api/captcha']  //除了这个地址，其他的URL都需要验证
 }));
 
 app.use(function (err, req, res, next) {
   if (err.name === 'UnauthorizedError') {   
       //  这个需要根据自己的业务逻辑来处理（ 具体的err值 请看下面）
-    res.status(401).send(err);
+    let code = "token错误";
+    switch (err.message) {
+      case "jwt expired":
+        code = "tokrn过期";
+        break;
+      case "invalid signature":
+        code = "tokrn无效";
+        break;
+      default:
+        break;
+    }
+    res.status(401).send({"status": "error", "code": code});
   }else{
     next();
   }
