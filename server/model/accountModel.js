@@ -8,7 +8,7 @@ var accountScheam = new mongoose.Schema({
   regtime: Date
 });
 accountScheam.statics.findUser = function (user, callback) {
-  return this.model('Account').find({"username": user}, callback);
+  return this.model('Account').find({username: user}, callback);
 };
 
 var accountModel = db.model('Account', accountScheam);

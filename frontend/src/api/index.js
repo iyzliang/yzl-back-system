@@ -11,4 +11,10 @@ api.register = (data, cd, ecd) => {
   .catch(ecd);
 }
 
+api.login = (data, cd, ecd) => {
+  axios.post('/api/login_blog', qs.stringify(data))
+  .then(cd)
+  .catch(ecd);
+}
+
 export default api;

@@ -3,12 +3,12 @@
 		<div class="dowebok" :class="[{rotateOutUpLeft: flagBoolean.registerShow}, 'animated']" v-if="login">
 			<div class="logo"></div>
 			<div class="form-item">
-				<input class="username" autocomplete="off" type="text" placeholder="账号" v-model="username">
-				<p class="tip">请输入正确用户账号</p>
+				<input class="username" autocomplete="off" type="text" placeholder="账号" v-model="username" @focus="errusername = null">
+				<p class="tip" v-if="errusername">{{errusername}}</p>
 			</div>
 			<div class="form-item">
-				<input class="password" autocomplete="off" type="password" placeholder="登录密码" v-model="password">
-				<p class="tip">账号或密码不正确</p>
+				<input class="password" autocomplete="off" type="password" placeholder="登录密码" v-model="password" @focus="errpassword = null">
+				<p class="tip" v-if="errpassword">{{errpassword}}</p>
 			</div>
 			<div class="form-item">
 				<button id="submit" :class="[{rubberBand: flagBoolean.loginShow}, 'animated']" @click="loginFn">登 录</button>
@@ -62,8 +62,10 @@ export default {
         Show: false
       },
       captchaSrc: "/api/captcha",
-      username: null,
-      password: null,
+			username: null,
+			errusername: null,
+			password: null,
+			errpassword: null,
       login: true,
       register: {
         username: null,
@@ -81,13 +83,54 @@ export default {
   },
 
   methods: {
+		// 登录
     loginFn() {
       this.flagBoolean.loginShow = true;
       setTimeout(() => {
         this.flagBoolean.loginShow = false;
-      }, 1000);
-    },
+			}, 1000);
+			
+			let check = this.loginCheck()
+			if(check){
+				Api.login({username: this.username, password: this.password}, (data) => {
+					if(data.data.status == "ok") {
+						console.log(data.data);
+					} else {
+						this.$message.error(data.data.code);
+					}
+				}, (e) => {
+					console.log(e);
+				})
+			}
+			
+		},
+		
+		loginCheck() {
+			let flag = true;
+			if(this.username) {
+				if(this.username.length < 6 || this.username.length > 16) {
+					this.errusername = "账号不正确";
+					flag = false;
+				}
+			} else {
+				this.errusername = "请输入账号";
+				flag = false;
+			}
 
+			if(this.password) {
+				if(this.password.length < 6 || this.password.length > 16) {
+					this.errpassword = "密码不正确";
+					flag = false;
+				}
+			} else {
+				this.errpassword = "请输入密码";
+				flag = false;
+			}
+
+			return flag
+		},
+
+		// 去注册
     toRegister() {
       this.flagBoolean.registerShow = true;
       setTimeout(() => {
@@ -96,6 +139,7 @@ export default {
       }, 1000);
     },
 
+		// 返回
     toBack() {
       this.flagBoolean.backShow = true;
       setTimeout(() => {
@@ -104,6 +148,7 @@ export default {
       }, 1000);
     },
 
+		// 注册
     registerFn() {
       this.flagBoolean.registerShow = true;
       setTimeout(() => {
@@ -112,17 +157,24 @@ export default {
       }, 1000);
 
 			var check = this.checkFn();
-			console.log('--->', check);
 			if(check) {
-				console.log(check);
 				Api.register({"username": this.register.username, "password": this.register.password, "proof": this.register.proof_code}, (data) => {
-					console.log(data.data);
+					var result = data.data;
+					if(result.status == "ok") {
+						console.log('ok');
+					} else {
+						this.refreshFn();
+						this.$message.error(result.code);
+					}
 				}, (e) => {
 					console.log(e);
 				});
+			} else {
+				this.refreshFn();
 			}
     },
 
+		// 校验
     checkFn() {
 			let data = this.register;
 			let flag = true;	
@@ -165,6 +217,7 @@ export default {
 			return flag;
     },
 
+		// 刷新验证码
     refreshFn() {
       this.captchaSrc = "/api/captcha?d=" + Math.random();
     }

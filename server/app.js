@@ -1,6 +1,5 @@
 var express = require('express'),
     bodyParser = require('body-parser'),
-    jwt = require('jsonwebtoken'),
     expressJWT = require('express-jwt'),
     session = require('express-session'),
     routes = require('./router/index'),
@@ -18,7 +17,7 @@ app.use(session({
 app.use('/api', expressJWT({
   secret: secretOrPrivateKey   
 }).unless({
-  path: ['/api/register_blog', '/api/captcha']  //除了这个地址，其他的URL都需要验证
+  path: ['/api/register_blog', '/api/captcha', '/api/login_blog']  //除了这个地址，其他的URL都需要验证
 }));
 
 app.use(function (err, req, res, next) {
