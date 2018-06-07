@@ -22,227 +22,275 @@
 			<div class="register"></div>
 			<div class="form-item">
 				<el-tooltip class="item" effect="light" content="6-16位字符，可用数字、字母、_" placement="right">
-					<input class="username" autocomplete="off" type="text" placeholder="用户名" v-model="register.username">
+					<input class="username" autocomplete="off" type="text" placeholder="用户名" v-model="register.username" @focus="errorCode.username = null">
 				</el-tooltip>
-				<p class="tip">用户名</p>
+				<p class="tip" v-show="errorCode.username">{{errorCode.username}}</p>
 			</div>
 			<div class="form-item">
 				<el-tooltip class="item" effect="light" content="6-16位字符，可用数字、字母、_" placement="right">
-					<input class="password" autocomplete="off" type="password" placeholder="密码" v-model="register.password">
+					<input class="password" autocomplete="off" type="password" placeholder="密码" v-model="register.password"  @focus="errorCode.password = null">
 				</el-tooltip>
-				<p class="tip">密码</p>
+				<p class="tip" v-show="errorCode.password">{{errorCode.password}}</p>
 			</div>
 			<div class="form-item">
 				<el-tooltip class="item" effect="light" content="再次输入密码" placement="right">
-					<input class="password" autocomplete="off" type="password" placeholder="再次输入密码" v-model="register.password_again">
+					<input class="password" autocomplete="off" type="password" placeholder="再次输入密码" v-model="register.password_again"  @focus="errorCode.password_again = null">
 				</el-tooltip>
-				<p class="tip">再次输入密码</p>
+				<p class="tip" v-show="errorCode.password_again">{{errorCode.password_again}}</p>
 			</div>
 			<div class="form-item">
-				<input class="proof" autocomplete="off" type="text" style="width:180px" v-model="register.proof_code">
+				<input class="proof" autocomplete="off" type="text" style="width:180px" v-model="register.proof_code"  @focus="errorCode.proof_code = null">
 				<img :src="captchaSrc" style="width: 100px;height: 50px;background: #fff;vertical-align: middle;margin-left:30px;" @click="refreshFn">
-				<p class="tip">请输入验证码</p>
+				<p class="tip" v-show="errorCode.proof_code">{{errorCode.proof_code}}</p>
 			</div>
 			<div class="form-item">
-				<button id="submit" autocomplete="off" :class="[{rubberBand: flagBoolean.loginShow}, 'animated']" @click="registerFn">注 册</button>
+				<button id="submit" autocomplete="off" :class="[{rubberBand: flagBoolean.registerShow}, 'animated']" @click="registerFn">注 册</button>
 			</div>
 		</div>
 	</div>
 </template>
 
 <script>
-	import Api from '../api/index.js';
-	export default {
-		data() {
-			return {
-				flagBoolean: {
-					loginShow: false,
-					registerShow: false,
-					backShow: false,
-					Show: false
-				},
-				captchaSrc: '/api/captcha',
+import Api from "../api/index.js";
+export default {
+  data() {
+    return {
+      flagBoolean: {
+        loginShow: false,
+        registerShow: false,
+        backShow: false,
+        Show: false
+      },
+      captchaSrc: "/api/captcha",
+      username: null,
+      password: null,
+      login: true,
+      register: {
+        username: null,
+        password: null,
+        password_again: null,
+        proof_code: null
+      },
+      errorCode: {
 				username: null,
 				password: null,
-				login: true,
-				register: {
-					username: null,
-					password: null,
-					password_again: null,
-					proof_code: null
-				}
-			};
-		},
+				password_again: null,
+				proof_code: null
+      }
+    };
+  },
 
-		methods: {
-			loginFn() {
-				this.flagBoolean.loginShow = true;
-				setTimeout(() => {
-					this.flagBoolean.loginShow = false;
-				}, 1000);
-			},
+  methods: {
+    loginFn() {
+      this.flagBoolean.loginShow = true;
+      setTimeout(() => {
+        this.flagBoolean.loginShow = false;
+      }, 1000);
+    },
 
-			toRegister() {
-				this.flagBoolean.registerShow = true;
-				setTimeout(() => {
-					this.flagBoolean.registerShow = false;
-					this.login = false;
-				}, 1000);
-			},
+    toRegister() {
+      this.flagBoolean.registerShow = true;
+      setTimeout(() => {
+        this.flagBoolean.registerShow = false;
+        this.login = false;
+      }, 1000);
+    },
 
-			toBack() {
-				this.flagBoolean.backShow = true;
-				setTimeout(() => {
-					this.flagBoolean.backShow = false;
-					this.login = true;
-				}, 1000);
-			},
+    toBack() {
+      this.flagBoolean.backShow = true;
+      setTimeout(() => {
+        this.flagBoolean.backShow = false;
+        this.login = true;
+      }, 1000);
+    },
 
-			registerFn() {
-				this.flagBoolean.registerShow = true;
-				setTimeout(() => {
-					this.flagBoolean.registerShow = false;
-					this.login = false;
-				}, 1000);
-			},
+    registerFn() {
+      this.flagBoolean.registerShow = true;
+      setTimeout(() => {
+        this.flagBoolean.registerShow = false;
+        this.login = false;
+      }, 1000);
 
-			checkFn() {
-				let data = this.register;
-				if(data.username) {
-					if(data.username.length < 6 || data.username.length > 16) {
-						
-					}
-				}
-			},
-
-			refreshFn() {
-				this.captchaSrc = '/api/captcha?d=' + Math.random();
+			var check = this.checkFn();
+			console.log('--->', check);
+			if(check) {
+				console.log(check);
+				Api.register({"username": this.register.username, "password": this.register.password, "proof": this.register.proof_code}, (data) => {
+					console.log(data.data);
+				}, (e) => {
+					console.log(e);
+				});
 			}
-		},
-	};
+    },
 
+    checkFn() {
+			let data = this.register;
+			let flag = true;	
+      if (data.username) {
+				if(!/^[a-z0-9_]{6,16}$/.test(data.username)){
+					this.errorCode.username = "用户名不合法";
+					flag = false;
+				}
+      } else {
+				this.errorCode.username = "请输入用户名";
+				flag = false;
+      }
+
+      if (data.password) {
+				if(!/^[a-z0-9_]{6,16}$/.test(data.password)){
+					this.errorCode.password = "密码名不合法";
+					flag = false;
+				}
+      } else {
+				this.errorCode.password = "请输入密码";
+				flag = false;
+			}
+			
+			if (data.password_again) {
+				if(data.password_again != data.password){
+					this.errorCode.password_again = "两次输入密码不相同";
+					flag = false;
+				}
+      } else {
+				this.errorCode.password_again = "请再次输入密码";
+				flag = false;
+			}
+
+			if(!data.proof_code) {
+				this.refreshFn();	
+				this.errorCode.proof_code = "请输入验证码";
+				flag = false;
+			}
+			console.log('===>', flag);
+			return flag;
+    },
+
+    refreshFn() {
+      this.captchaSrc = "/api/captcha?d=" + Math.random();
+    }
+  }
+};
 </script>
 
 <style lang="scss" scoped>
-	.login {
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		background: #fff url(http://oxnqkx7p0.bkt.clouddn.com/sky-img.jpg) 50% 50% no-repeat;
-		background-size: cover;
-		.dowebok {
-			position: absolute;
-			left: 50%;
-			top: 50%;
-			width: 430px;
-			height: 550px;
-			margin: -300px 0 0 -215px;
-			border: 1px solid #fff;
-			border-radius: 20px;
-			overflow: hidden;
-			.logo {
-				width: 104px;
-				height: 104px;
-				margin: 50px auto 80px;
-				background: url(../assets/images/login.png) 0 0 no-repeat;
-			}
-			.register {
-				width: 104px;
-				height: 104px;
-				margin: 20px auto 20px;
-				background: url(../assets/images/register.png) 0 0 no-repeat;
-			}
-			.form-item {
-				position: relative;
-				width: 360px;
-				margin: 0 auto;
-				padding-bottom: 30px;
-			}
-			.form-item input {
-				width: 360px;
-				height: 50px;
-				padding-left: 70px;
-				border: 1px solid #fff;
-				border-radius: 25px;
-				font-size: 18px;
-				color: #fff;
-				background-color: transparent;
-				outline: none;
-			}
-			.form-item button {
-				width: 360px;
-				height: 50px;
-				border: 0;
-				border-radius: 25px;
-				font-size: 18px;
-				color: #1f6f4a;
-				outline: none;
-				cursor: pointer;
-				background-color: #fff;
-			}
-			.username {
-				background: url(../assets/images/zhanghao.png) 20px 12px no-repeat;
-				background-size: 23px 23px;
-			}
-			.password {
-				background: url(../assets/images/password.png) 23px 11px no-repeat;
-			}
-			.proof{
-				background: url(../assets/images/proof.png) 23px 11px no-repeat;	
-			}
-			.tip {
-				display: none;
-				position: absolute;
-				left: 20px;
-				top: 52px;
-				font-size: 14px;
-				color: #f50;
-			}
-			.reg-bar {
-				width: 360px;
-				margin: 20px auto 0;
-				font-size: 14px;
-				overflow: hidden;
-			}
-			.reg-bar a {
-				color: #fff;
-				text-decoration: none;
-			}
-			.reg-bar a:hover {
-				text-decoration: underline;
-			}
-			.reg-bar .reg {
-				float: left;
-			}
-			.reg-bar .forget {
-				float: right;
-			}
-			.dowebok input-placeholder {
-				font-size: 18px;
-				line-height: 1.4;
-				color: #fff;
-			}
-		}
-		.logout {
-			position: relative;
-			.back {
-				cursor: pointer;
-				width: 50px;
-				height: 50px;
-				line-height: 50px;
-				text-align: center;
-				position: absolute;
-				font-size: 30px;
-				color: #fff;
-				left: 10px;
-				top: 10px;
-				&:hover {
-					color: #f50;
-				}
-			}
-		}
-	}
-
+.login {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5)
+    url(http://oxnqkx7p0.bkt.clouddn.com/sky-img.jpg) 50% 50% no-repeat;
+  background-size: cover;
+  .dowebok {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 430px;
+    height: 550px;
+    margin: -300px 0 0 -215px;
+    border: 1px solid #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    .logo {
+      width: 104px;
+      height: 104px;
+      margin: 50px auto 80px;
+      background: url(../assets/images/login.png) 0 0 no-repeat;
+    }
+    .register {
+      width: 104px;
+      height: 104px;
+      margin: 20px auto 20px;
+      background: url(../assets/images/register.png) 0 0 no-repeat;
+    }
+    .form-item {
+      position: relative;
+      width: 360px;
+      margin: 0 auto;
+      padding-bottom: 30px;
+    }
+    .form-item input {
+      width: 360px;
+      height: 50px;
+      padding-left: 70px;
+      border: 1px solid #fff;
+      border-radius: 25px;
+      font-size: 18px;
+      color: #fff;
+      background-color: transparent;
+      outline: none;
+    }
+    .form-item button {
+      width: 360px;
+      height: 50px;
+      border: 0;
+      border-radius: 25px;
+      font-size: 18px;
+      color: #1f6f4a;
+      outline: none;
+      cursor: pointer;
+      background-color: #fff;
+    }
+    .username {
+      background: url(../assets/images/zhanghao.png) 20px 12px no-repeat;
+      background-size: 23px 23px;
+    }
+    .password {
+      background: url(../assets/images/password.png) 23px 11px no-repeat;
+    }
+    .proof {
+      background: url(../assets/images/proof.png) 23px 11px no-repeat;
+    }
+    .tip {
+      position: absolute;
+      left: 20px;
+      top: 52px;
+      font-size: 14px;
+      color: #f50;
+    }
+    .reg-bar {
+      width: 360px;
+      margin: 20px auto 0;
+      font-size: 14px;
+      overflow: hidden;
+    }
+    .reg-bar a {
+      color: #fff;
+      text-decoration: none;
+    }
+    .reg-bar a:hover {
+      text-decoration: underline;
+    }
+    .reg-bar .reg {
+      float: left;
+    }
+    .reg-bar .forget {
+      float: right;
+    }
+    .dowebok input-placeholder {
+      font-size: 18px;
+      line-height: 1.4;
+      color: #fff;
+    }
+  }
+  .logout {
+    position: relative;
+    .back {
+      cursor: pointer;
+      width: 50px;
+      height: 50px;
+      line-height: 50px;
+      text-align: center;
+      position: absolute;
+      font-size: 30px;
+      color: #fff;
+      left: 10px;
+      top: 10px;
+      &:hover {
+        color: #f50;
+      }
+    }
+  }
+}
 </style>

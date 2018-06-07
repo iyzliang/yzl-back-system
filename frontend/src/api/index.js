@@ -3,11 +3,12 @@ import axios from 'axios';
 let api = {
 
 };
+var qs = require('qs');
 
 api.register = (data, cd, ecd) => {
-  axios.post('/api/register_blog', data)
-  .then(cb)
-  .catch(ecb);
+  axios.post('/api/register_blog', qs.stringify(data))
+  .then(cd)
+  .catch(ecd);
 }
 
 export default api;

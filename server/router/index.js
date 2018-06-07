@@ -23,7 +23,7 @@ router.post('/register_blog', (req, res) => {
   if(body.proof) {
     req.session.captcha == body.proof ? "" : res.json({"status": "error", "code": "验证码不正确"});
   } else {
-    res.json({"status": "error", "code": "验证码不正确"});
+    res.json({"status": "error", "code": "验证码不为空"});
   }
   if(!body.username || !body.password) {
     res.json({"status": "error", "code": "参数错误"});
@@ -33,7 +33,7 @@ router.post('/register_blog', (req, res) => {
         res.json({"status": "error", "code": "查询错误"});
       } else {
         if(result && result.length == 0){
-          (new accountModel({username: md5hex(body.username), password: md5hex(body.password), regtime: (new Date()).getTime()})).save((err, r) => {
+          (new accountModel({username: body.username, password: md5hex(body.password), regtime: (new Date()).getTime()})).save((err, r) => {
             if(err) {
               res.json({"status": "error", "code": "插入数据库失败"});
             } else {
