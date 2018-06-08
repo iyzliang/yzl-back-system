@@ -94,7 +94,8 @@ export default {
 			if(check){
 				Api.login({username: this.username, password: this.password}, (data) => {
 					if(data.data.status == "ok") {
-						console.log(data.data);
+            localStorage.setItem('blog_user',data.data.username);
+            this.$router.push('/blogList');
 					} else {
 						this.$message.error(data.data.code);
 					}

@@ -69,7 +69,7 @@ router.post('/login_blog', (req, res) => {
       } else {
         if(result && result.length > 0){
           if(result[0].password == md5hex(body.password)){
-            res.json({"status": "ok", "token": setToken({username: body.username})});
+            res.json({"status": "ok", "token": setToken({username: body.username}), "username": body.username});
           } else {
             res.json({"status": "error", "code": "密码错误"});
           }
