@@ -61,6 +61,7 @@
     .pageMain{
       display: flex;
       .viewMain{
+        overflow: scroll;
         flex: 1;
       }
       .el-menu-vertical{
