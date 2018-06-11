@@ -95,6 +95,7 @@ export default {
 				Api.login({username: this.username, password: this.password}, (data) => {
 					if(data.data.status == "ok") {
             localStorage.setItem('blog_user',data.data.username);
+            localStorage.setItem('blog_token',data.data.token);  
             this.$router.push('/blogList');
 					} else {
 						this.$message.error(data.data.code);

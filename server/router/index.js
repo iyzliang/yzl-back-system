@@ -3,8 +3,13 @@ var router = require('express')
   svgCaptcha = require('svg-captcha'),
   crypto = require('crypto'),
   jwt = require('jsonwebtoken'),
+  formidable  = require('formidable'),
+  path = require('path'),
+  fs = require('fs'),
+  mongoID = require('mongodb').ObjectID,
   secretOrPrivateKey = "Yzliang",
-  accountModel = require('../model/accountModel');
+  accountModel = require('../model/accountModel'),
+  articleModel = require('../model/articleModel');
   
 function md5hex(code) {
   return crypto.createHash('md5').update(code).digest('hex');
@@ -82,6 +87,46 @@ router.post('/login_blog', (req, res) => {
 })
 
 // 添加文章
+router.post('/article_blog', (req, res) => {
+  let body = req.body;
+  console.log(req.user.username);
+  if(body.image && body.title && body.description && body.isshow && body.article && body.date) {
+    if(body.id) {
+      
+    } else {
+      accountModel.findUser(req.user.username,(err, result) => {
+        if(err) {
+          res.json({"status": "error", "code": "查询错误", "err": err});
+        } else {
+          res.json(result);
+        }
+      })
+    }
+  } else {
+    res.json({"status": "error", "code": "参数不正确"});
+  }
 
+  // 图片上传
+  app.post('/upload', function(req, res){
+
+    var form = new formidable.IncomingForm();
+    form.uploadDir = "./images";
+    form.parse(req, function(err, fields, files) {
+      if (err) {
+        res.json({"status": "error", "code": "上传失败"});
+      } else {
+        var extname = path.extname(files.file.name);
+        var oldpath = __dirname + "/" + files.file.path;
+        var newpath = __dirname + "/images/" + new mongoID() + extname;
+        // //改名
+        fs.rename(oldpath,newpath,function(err){
+          res.json(files);
+        });
+
+      }
+    });
+});
+
+})
 
 module.exports = router;

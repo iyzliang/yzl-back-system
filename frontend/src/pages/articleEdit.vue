@@ -43,13 +43,14 @@
       </div>
       <div class="operation">
         <el-button type="danger" plain>取消</el-button>
-        <el-button type="success" plain>保存</el-button>
+        <el-button type="success" plain @click="saveFn">保存</el-button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+  import Api from "../api/index.js";
 	export default {
 		data() {
 			return {
@@ -138,7 +139,13 @@
 						 */
 						$vm.$img2Url(pos, url);
 					})
-			}
+      },
+      
+      saveFn () {
+        Api.addArticle({}, (data) => {
+          console.log(data.data);
+        })
+      }
 		}
 	}
 
@@ -174,7 +181,7 @@
 				width: 100%;
 				height: 100%;
         .markdown{
-          height: 400px;
+          min-height: 400px;
         }
 			}
       .operation{
