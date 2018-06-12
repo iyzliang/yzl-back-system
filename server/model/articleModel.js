@@ -9,7 +9,9 @@ var articleScheam = new mongoose.Schema({
   isshow: Boolean,
   description: String,
   article: String,
-  date: Date
+  date: Date,
+  accountid: String,
+  numofviews: Number
 });
 
 var articleModel = db.model('Article', articleScheam);

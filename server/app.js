@@ -5,7 +5,8 @@ var express = require('express'),
     routes = require('./router/index'),
     app = express(),
     secretOrPrivateKey = "Yzliang";
-
+    
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
 app.use(session({
@@ -26,7 +27,7 @@ app.use(function (err, req, res, next) {
     let code = "token错误";
     switch (err.message) {
       case "jwt expired":
-        code = "tokrn过期";
+        code = "token过期";
         break;
       case "invalid signature":
         code = "tokrn无效";

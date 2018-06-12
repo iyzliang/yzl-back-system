@@ -71,87 +71,12 @@
 </template>
 
 <script>
-	import moment from 'moment';
+  import moment from 'moment';
+  import Api from "../api/index.js";
 	export default {
 		data() {
 			return {
-				articleList: [
-          {
-						title: "第一篇文章",
-						description: "这是第一个关于文章的描述，我也不知道写什么好。些什么好，些什么好，些什么好，些什么好，些什么好，些什么好，些什么好。",
-						tags: ['学习', '技术', '生活', '记录'],
-						date: 1527737350037,
-						numofviews: 12,
-						isshow: true
-          },{
-						title: "第一篇文章",
-						description: "这是第一个关于文章的描述，我也不知道写什么好。些什么好，些什么好，些什么好，些什么好，些什么好，些什么好，些什么好。",
-						tags: ['学习', '技术', '生活', '记录'],
-						date: 1527737350037,
-						numofviews: 12,
-						isshow: true
-          },
-          {
-						title: "第一篇文章",
-						description: "这是第一个关于文章的描述，我也不知道写什么好。些什么好，些什么好，些什么好，些什么好，些什么好，些什么好，些什么好。",
-						tags: ['学习', '技术', '生活', '记录'],
-						date: 1527737350037,
-						numofviews: 12,
-						isshow: true
-          },{
-						title: "第一篇文章",
-						description: "这是第一个关于文章的描述，我也不知道写什么好。些什么好，些什么好，些什么好，些什么好，些什么好，些什么好，些什么好。",
-						tags: ['学习', '技术', '生活', '记录'],
-						date: 1527737350037,
-						numofviews: 12,
-						isshow: true
-          },
-          {
-						title: "第一篇文章",
-						description: "这是第一个关于文章的描述，我也不知道写什么好。些什么好，些什么好，些什么好，些什么好，些什么好，些什么好，些什么好。",
-						tags: ['学习', '技术', '生活', '记录'],
-						date: 1527737350037,
-						numofviews: 12,
-						isshow: true
-          },{
-						title: "第一篇文章",
-						description: "这是第一个关于文章的描述，我也不知道写什么好。些什么好，些什么好，些什么好，些什么好，些什么好，些什么好，些什么好。",
-						tags: ['学习', '技术', '生活', '记录'],
-						date: 1527737350037,
-						numofviews: 12,
-						isshow: true
-          },
-          {
-						title: "第一篇文章",
-						description: "这是第一个关于文章的描述，我也不知道写什么好。些什么好，些什么好，些什么好，些什么好，些什么好，些什么好，些什么好。",
-						tags: ['学习', '技术', '生活', '记录'],
-						date: 1527737350037,
-						numofviews: 12,
-						isshow: true
-          },{
-						title: "第一篇文章",
-						description: "这是第一个关于文章的描述，我也不知道写什么好。些什么好，些什么好，些什么好，些什么好，些什么好，些什么好，些什么好。",
-						tags: ['学习', '技术', '生活', '记录'],
-						date: 1527737350037,
-						numofviews: 12,
-						isshow: true
-          },
-          {
-						title: "第一篇文章",
-						description: "这是第一个关于文章的描述，我也不知道写什么好。些什么好，些什么好，些什么好，些什么好，些什么好，些什么好，些什么好。",
-						tags: ['学习', '技术', '生活', '记录'],
-						date: 1527737350037,
-						numofviews: 12,
-						isshow: true
-          },{
-						title: "第一篇文章",
-						description: "这是第一个关于文章的描述，我也不知道写什么好。些什么好，些什么好，些什么好，些什么好，些什么好，些什么好，些什么好。",
-						tags: ['学习', '技术', '生活', '记录'],
-						date: 1527737350037,
-						numofviews: 12,
-						isshow: true
-          }
-        ],
+				articleList: [],
 				searchValue: '',
         searchType: 'title',
         menuHeight: null,
@@ -161,6 +86,13 @@
     
     created () {
       this.menuHeight = $('.articleList').height() - 40 - 110 - 50;
+      Api.getArticle({}, (data) => {
+        if(data.data.status == "ok") {
+          this.articleList = data.data.data;
+        } else {
+          this.$message.error(data.data.code);
+        }
+      })
     },
 
 		methods: {

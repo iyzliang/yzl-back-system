@@ -6,10 +6,13 @@
           v-if="!item.image"
           class="card-left"
           drag
-          action="https://jsonplaceholder.typicode.com/posts/"
-          :on-success="imgSuccessFn">
+          action="/api/upload"
+          :headers = "headerObj"
+          :before-upload = "beforeUploadFn"
+          :on-success="imgSuccessFn"
+          :on-error="imgErrorFn">
           <i class="el-icon-upload"></i>
-          <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+          <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em>文件不大于1M</div>
         </el-upload>
         <div class="card-left" :style="{backgroundImage: 'url('+item.image+')', backgroundSize: 'cover'}" v-if="item.image"></div>
         <div class="card-right">
@@ -39,11 +42,11 @@
         </div>
       </div>
       <div class="markdownBox">
-        <mavon-editor class="markdown" :ishljs = "true"  @imgAdd="$imgAdd" :toolbars="toolbars" v-model="value"/>
+        <mavon-editor class="markdown" :ishljs = "true"  @imgAdd="$imgAdd" :toolbars="toolbars" v-model="item.article"/>
       </div>
       <div class="operation">
-        <el-button type="danger" plain>取消</el-button>
-        <el-button type="success" plain @click="saveFn">保存</el-button>
+        <el-button type="danger" plain @click="$router.go(-1)">取消</el-button>
+        <el-button type="success" plain @click="saveFn" :loading="loadingSave">保存</el-button>
       </div>
     </div>
   </div>
@@ -59,8 +62,10 @@
 					title: null,
 					tags: [],
 					isshow: true,
-					description: null
-				},
+          description: null,
+          article: ''
+        },
+        loadingSave: false,
 				options: [{
 					value: '选项1',
 					label: '黄金糕'
@@ -77,7 +82,6 @@
 					value: '选项5',
 					label: '北京烤鸭'
         }],
-				value: '',
 				toolbars: {
 					bold: true, // 粗体
 					italic: true, // 斜体
@@ -111,14 +115,36 @@
 					/* 2.2.1 */
 					subfield: true, // 单双栏模式
 					preview: true, // 预览
-				}
+        },
+        headerObj: {"Authorization": "Bearer " + localStorage.getItem('blog_token')}
 			}
 		},
 
 		methods: {
+      beforeUploadFn (file) {
+        var typelist= ['image/gif','image/jpeg','image/jpg','image/png'];
+        if(typelist.indexOf(file.type) >= 0) {
+          if (file.size > 1100000) {
+            this.$message.error("文件过大");
+            return false;
+          }
+        } else {
+          this.$message.error("上传格式不正确");
+          return false;
+        }
+      },
+      
 			imgSuccessFn(response, file, fileList) {
-				console.log(response);
-			},
+				if (response.status == "ok") {
+          this.item.image = response.url;
+        }
+      },
+      
+      imgErrorFn (e) {
+        if(e.code == "token错误" || e.code == "token过期") {
+          this.$router.push('/login');
+        }
+      },
 
 			$imgAdd(pos, $file) {
 				// 第一步.将图片上传到服务器.
@@ -142,8 +168,16 @@
       },
       
       saveFn () {
-        Api.addArticle({}, (data) => {
-          console.log(data.data);
+        this.loadingSave = true;
+        var data = this.item;
+        data.date = (new Date).getTime();
+        Api.addArticle(data, (data) => {
+          this.loadingSave = false;
+          if(data.data.status == "ok") {
+            this.$message.success('保存成功');
+          } else {
+             this.$message.error(data.data.code);
+          }
         })
       }
 		}
