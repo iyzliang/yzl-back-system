@@ -57,6 +57,7 @@
 	export default {
 		data() {
 			return {
+        id: null,
 				item: {
 					image: "",
 					title: null,
@@ -118,7 +119,24 @@
         },
         headerObj: {"Authorization": "Bearer " + localStorage.getItem('blog_token')}
 			}
-		},
+    },
+    
+    created () {
+      if(this.$route.query.id) {
+        this.id = this.$route.query.id;
+        Api.getArticle({id: this.$route.query.id}, (data) => {
+          var item = data.data.data;
+          this.item = {
+            image: item.image,
+            title: item.title,
+            tags: item.tags,
+            isshow: item.isshow,
+            description: item.description,
+            article: item.article
+          }
+        })
+      }
+    },
 
 		methods: {
       beforeUploadFn (file) {
@@ -171,6 +189,9 @@
         this.loadingSave = true;
         var data = this.item;
         data.date = (new Date).getTime();
+        // if(this.id){
+        //   data.id = this.id;
+        // }
         Api.addArticle(data, (data) => {
           this.loadingSave = false;
           if(data.data.status == "ok") {

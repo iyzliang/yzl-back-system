@@ -7,7 +7,7 @@
 				<p class="tip" v-if="errusername">{{errusername}}</p>
 			</div>
 			<div class="form-item">
-				<input class="password" autocomplete="off" type="password" placeholder="登录密码" v-model="password" @focus="errpassword = null">
+				<input class="password" autocomplete="off" type="password" placeholder="登录密码" v-model="password" @focus="errpassword = null" @keyup.enter="loginFn">
 				<p class="tip" v-if="errpassword">{{errpassword}}</p>
 			</div>
 			<div class="form-item">

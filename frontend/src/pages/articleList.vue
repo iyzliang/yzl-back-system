@@ -50,8 +50,8 @@
         </el-table-column>
         <el-table-column fixed="right" label="操作" width="100" align="center">
           <template slot-scope="scope">
-            <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
-            <el-button type="text" size="small">编辑</el-button>
+            <el-button @click="editClick(scope.row)" type="text" size="small">编辑</el-button>
+            <el-button @click="deleteClick(scope.row)" type="text" size="small">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -63,7 +63,7 @@
         :current-page.sync="currentPage"
         :page-size="10"
         layout="prev, pager, next, jumper"
-        :total="99">
+        :total="total">
         </el-pagination>
       </div>
 
@@ -80,22 +80,32 @@
 				searchValue: '',
         searchType: 'title',
         menuHeight: null,
-        currentPage: 1
+        currentPage: 1,
+        total: null
 			}
     },
     
     created () {
       this.menuHeight = $('.articleList').height() - 40 - 110 - 50;
-      Api.getArticle({}, (data) => {
+      this.getArticleList();
+    },
+
+		methods: {
+      getArticleList (page) {
+        var data = {};
+        if(page) {
+          data = {page: page}
+        }
+        Api.getArticleList(data, (data) => {
         if(data.data.status == "ok") {
           this.articleList = data.data.data;
+          this.total = data.data.total
         } else {
           this.$message.error(data.data.code);
         }
       })
-    },
+      },
 
-		methods: {
 			formatterDateFn(row, column, cellValue, index) {
 				return moment(row.date)
 					.format('YYYY-MM-DD HH:mm:ss')
@@ -109,11 +119,23 @@
 				}
 			},
 
-			handleClick(row) {
-				console.log(row);
+			editClick(row) {
+        this.$router.push({path: 'articleEdit', query: {id: row.id}})
+      },
+
+      deleteClick (row) {
+        Api.delete({id: row.id}, (data) => {
+          if(data.data.status == "ok") {
+            this.$message.success("删除成功");
+            this.getArticleList();
+          } else {
+            this.$message.error(data.data.code);
+          }
+        })
       },
       
       handleCurrentChange(val) {
+        this.getArticleList(val);
         console.log(`当前页: ${val}`);
       }
 		}

@@ -94,9 +94,22 @@ router.post('/login_blog', (req, res) => {
 // 添加文章
 router.post('/article_blog', (req, res) => {
 	let body = req.body;
-	if (body.image && body.title && body.description && body.isshow && body.article && body.date) {
+	if (body.image && body.title && body.description && body.isshow != undefined && body.article && body.date) {
 		if (body.id) {
-
+      articleModel.findOneAndUpdate({_id: body.id}, {
+        image: body.image,
+        title: body.title,
+        tags: body.tags,
+        isshow: body.isshow,
+        description: body.description,
+        article: body.article,
+        date: body.date}, (err, result) => {
+        if(err) {
+          res.json({"status": "error", "code": "更新数据库失败"}) 
+        } else {
+          res.json({"status": "ok", "code": "成功"})
+        }
+      })
 		} else {
 			accountModel.findUser(req.user.username, (err, result) => {
 				if (err) {
@@ -126,28 +139,74 @@ router.post('/article_blog', (req, res) => {
 	}
 });
 
-// 获取文章列表
 router.get('/article_blog', (req, res) => {
+  if(req.query.id) {
+    articleModel.findById(req.query.id, (err, result) => {
+      if(err) {
+        res.json({ "status": "error", "code": "查询错误" })
+      } else {
+        res.json({ "status": "ok", "code": "成功", "data": result })
+      }
+    })
+  } else {
+    res.json({ "status": "error", "code": "参数不正确" });
+  }
+})
+
+router.delete('/article_blog', (req, res) => {
+  if(req.body.id) {
+    articleModel.findByIdAndDelete(req.body.id, (err, result) => {
+      if(err) {
+        res.json({ "status": "error", "code": "删除失败" });
+      } else {
+        res.json({ "status": "ok", "code": "成功", "data": result});
+      }
+    })
+  } else {
+    res.json({ "status": "error", "code": "参数不正确" });
+  }
+})
+
+// 获取文章列表
+router.get('/article_list_blog', (req, res) => {
+  let page = req.query.page || 1;
   accountModel.findUser(req.user.username, (err, result) => {
     if (err) {
       res.json({ "status": "error", "code": "查询错误", "err": err });
     } else {
-      console.log(result[0]._id);
-      articleModel.find({"accountid": result[0]._id}, (err, r) => {
-        if (err) {
-          res.json({"status": "error", "code": "查询失败"})
+      articleModel.count({"accountid": result[0]._id}, (err, count) => {
+        if(err) {
+          res.json({"status": "error", "code": "查询失败"}) 
         } else {
-          var data = {"status": "ok", "code": "成功", "data": []};
-          if(r.length > 0) {
-            r.forEach((item, index) => {
-              delete item.image;
-              delete item.article;
-              delete  item.accountid;
-              data.data.push(item);
-            })
-          }
-          res.json(data);
+          articleModel.find({"accountid": result[0]._id})
+          .skip((page-1) * 10)
+          .limit(10)
+          .exec(
+            (err, r) => {
+              if (err) {
+                res.json({"status": "error", "code": "查询失败"})
+              } else {
+                var data = {"status": "ok", "code": "成功", "data": [], "total": count};
+                if(r.length > 0) {
+                  r.forEach((item, index) => {
+                    data.data.push({
+                      title: item.title,
+                      tags: item.tags,
+                      isshow: item.isshow,
+                      description: item.description,
+                      date: item.date,
+                      id: item._id,
+                      numofviews: item.numofviews || 0
+                    });
+                  })
+                }
+                res.json(data);
+              }
+            }
+          );
+
         }
+
       })
     }
   })

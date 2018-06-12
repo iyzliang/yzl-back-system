@@ -4,7 +4,7 @@
     <div class="action">
       <div class="username">{{username || '-'}}</div>
       <div class="logout">
-        <el-button type="text">退出</el-button>
+        <el-button type="text" @click="logoutFn">退出</el-button>
       </div>
     </div>
   </nav>
@@ -25,6 +25,11 @@ export default {
   methods: {
     closemenu () {
       this.$emit('closemenu');
+    },
+
+    logoutFn () {
+      localStorage.removeItem('blog_token');
+      this.$router.push('/login');
     }
   }
 }

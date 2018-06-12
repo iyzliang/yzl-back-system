@@ -31,10 +31,41 @@ api.addArticle = (data, cd ,ecd) => {
  }
 }
 
-api.getArticle = (data, cd ,ecd) => {
+api.getArticle = (data, cd, ecd) => {
   if (localStorage.getItem('blog_token')) {
     axios.get('/api/article_blog', {
-       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + localStorage.getItem('blog_token')}
+      params: {id: data.id},
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + localStorage.getItem('blog_token')}
+    })
+    .then(cd)
+    .catch((err) => {
+      window.location.hash = '#/login'; 
+     });
+  } else {
+    window.location.hash = '#/login';
+  }
+}
+
+api.delete = (data, cd, ecd) => {
+  if (localStorage.getItem('blog_token')) {
+    axios.delete('/api/article_blog', {
+      data: data,
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + localStorage.getItem('blog_token')}
+    })
+    .then(cd)
+    .catch((err) => {
+      window.location.hash = '#/login'; 
+    });
+  } else {
+    window.location.hash = '#/login';
+  }
+}
+
+api.getArticleList = (data, cd ,ecd) => {
+  if (localStorage.getItem('blog_token')) {
+    axios.get('/api/article_list_blog', {
+      params: data,
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + localStorage.getItem('blog_token')}
      })
     .then(cd)
     .catch((err) => {
