@@ -315,25 +315,12 @@ router.post('/upload', (req, res) => {
           res.json({ "status": "error", "code": "保存失败" });
         }
 			});
-
-
-
-
-
-      // // //改名
-      // fs.rename(oldpath, newpath, function(err) {
-      //   if (err) {
-      //     res.json({ "status": "error", "code": "保存失败" });
-      //   } else {
-      //     res.json({ "status": "ok", "url": newpath });
-      //   }
-      // });
     }
   });
 });
 
 router.get('/front_list', (req, res) => {
-	let page = 1;
+	let page = req.query.page || 1;
 	articleModel.count({isshow: true}, (err, count) => {
 		if(err) {
 			res.json({"status": "error", "code": "查询失败"}) 
@@ -347,7 +334,7 @@ router.get('/front_list', (req, res) => {
 					if (err) {
 						res.json({"status": "error", "code": "查询失败"})
 					} else {
-						var data = {"status": "ok", "code": "成功", "data": []};
+						var data = {"status": "ok", "code": "成功", "data": [], "total": count};
 						if(r.length > 0) {
 							r.forEach((item, index) => {
 								data.data.push({
@@ -368,5 +355,23 @@ router.get('/front_list', (req, res) => {
 		}
 
 	})
+})
+
+router.get('/front_article', (req, res) => {
+	if(req.query.id) {
+		articleModel.findById(req.query.id, (err, result) => {
+			if(err) {
+				res.json({"status": "error", "code": "查询失败"});
+			} else {
+				if(result) {
+					res.json(result);
+				} else {
+					res.json({"status": "error", "code": "查询失败"}) 
+				}
+			}
+		})
+	} else {
+		res.json({"status": "error", "code": "查询参数不正确"});
+	}
 })
 module.exports = router;
