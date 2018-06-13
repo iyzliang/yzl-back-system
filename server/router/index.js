@@ -332,4 +332,41 @@ router.post('/upload', (req, res) => {
   });
 });
 
+router.get('/front_list', (req, res) => {
+	let page = 1;
+	articleModel.count({isshow: true}, (err, count) => {
+		if(err) {
+			res.json({"status": "error", "code": "查询失败"}) 
+		} else {
+			articleModel.find({isshow: true})
+			.skip((page-1) * 10)
+			.limit(10)
+			.sort({date: -1})
+			.exec(
+				(err, r) => {
+					if (err) {
+						res.json({"status": "error", "code": "查询失败"})
+					} else {
+						var data = {"status": "ok", "code": "成功", "data": []};
+						if(r.length > 0) {
+							r.forEach((item, index) => {
+								data.data.push({
+									image: item.image,
+									title: item.title,
+									tags: item.tags,
+									description: item.description,
+									date: item.date,
+									id: item._id
+								});
+							})
+						}
+						res.json(data);
+					}
+				}
+			);
+
+		}
+
+	})
+})
 module.exports = router;
