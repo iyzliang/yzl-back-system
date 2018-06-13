@@ -9,7 +9,9 @@ var router = require('express')
 	mongoID = require('mongodb')
 	.ObjectID,
 	secretOrPrivateKey = "Yzliang",
+	upload = require('../model/upload'),
 	accountModel = require('../model/accountModel'),
+	tagModel = require('../model/tagsModel'),
 	articleModel = require('../model/articleModel');
 
 function md5hex(code) {
@@ -91,7 +93,7 @@ router.post('/login_blog', (req, res) => {
 	}
 })
 
-// 添加文章
+// 添加文章/修改文章
 router.post('/article_blog', (req, res) => {
 	let body = req.body;
 	if (body.image && body.title && body.description && body.isshow != undefined && body.article && body.date) {
@@ -104,12 +106,12 @@ router.post('/article_blog', (req, res) => {
         description: body.description,
         article: body.article,
         date: body.date}, (err, result) => {
-        if(err) {
-          res.json({"status": "error", "code": "更新数据库失败"}) 
-        } else {
-          res.json({"status": "ok", "code": "成功"})
-        }
-      })
+					if(err) {
+						res.json({"status": "error", "code": "更新数据库失败"}) 
+					} else {
+						res.json({"status": "ok", "code": "成功"})
+					}
+				})
 		} else {
 			accountModel.findUser(req.user.username, (err, result) => {
 				if (err) {
@@ -174,11 +176,15 @@ router.get('/article_list_blog', (req, res) => {
     if (err) {
       res.json({ "status": "error", "code": "查询错误", "err": err });
     } else {
-      articleModel.count({"accountid": result[0]._id}, (err, count) => {
+			var finddata = {"accountid": result[0]._id};
+			if(req.query.qtype && req.query.q) {
+				finddata[req.query.qtype] =  {'$regex': req.query.q, $options: '$i'};
+			}
+      articleModel.count(finddata, (err, count) => {
         if(err) {
           res.json({"status": "error", "code": "查询失败"}) 
         } else {
-          articleModel.find({"accountid": result[0]._id})
+          articleModel.find(finddata)
           .skip((page-1) * 10)
           .limit(10)
           .exec(
@@ -212,29 +218,116 @@ router.get('/article_list_blog', (req, res) => {
   })
 })
 
+router.post('/tag_blog', (req, res) => {
+	let body = req.body;
+	if(body.tagname) {
+		accountModel.findUser(req.user.username, (err, result) => {
+			if (err) {
+				res.json({ "status": "error", "code": "查询错误", "err": err });
+			} else {
+				tagModel.find({tag: body.tagname}, (err, r) => {
+					if(err){
+						res.json({ "status": "error", "code": "查询错误", "err": err });
+					} else {
+						if (r.length > 0) {
+							res.json({ "status": "error", "code": "标签已存在" });
+						} else {
+							(new tagModel({
+								tag: body.tagname,
+								date: (new Date()).getTime(),
+								accountid: result[0]._id
+							})).save((err, r) => {
+								if (err) {
+									res.json({"status": "error", "code": "插入数据库失败"})
+								} else {
+									res.json({"status": "ok", "code": "添加成功"});
+								}
+							})
+						}
+					}
+				})
+			}
+		})
+	} else {
+		res.json({ "status": "error", "code": "参数不正确" });
+	}
+})
+
+router.get('/tag_blog', (req, res) => {
+	accountModel.findUser(req.user.username, (err, result) => {
+    if (err) {
+      res.json({ "status": "error", "code": "查询错误", "err": err });
+    } else {
+			var finddata = {"accountid": result[0]._id};
+			tagModel.find(finddata, (err, r) => {
+				if(err) {
+					res.json({ "status": "error", "code": "查询错误", "err": err });
+				} else {
+					res.json({ "status": "ok", "code": "成功", "data": r });	
+				}
+			})
+    }
+  })	
+})
+
+router.delete('/tag_blog', (req, res) => {
+	if(req.body.id) {
+    tagModel.findByIdAndDelete(req.body.id, (err, result) => {
+      if(err) {
+        res.json({ "status": "error", "code": "删除失败" });
+      } else {
+        res.json({ "status": "ok", "code": "成功", "data": result});
+      }
+    })
+  } else {
+    res.json({ "status": "error", "code": "参数不正确" });
+  }
+
+})
 // 图片上传
 router.post('/upload', (req, res) => {
-  console.log('=========');
   var form = new formidable.IncomingForm();
   form.uploadDir = "./images";
   form.parse(req, function(err, fields, files) {
     if (err) {
       res.json({ "status": "error", "code": "上传失败" });
     } else {
+			console.log("-----",files);
       var extname = path.extname(files.file.name);
       var newname = __dirname.split('/');
       newname.pop();
       newname = newname.join('/');
       var oldpath = newname + "/" + files.file.path;
-      var newpath = newname + "/images/" + new mongoID() + extname;
-      // //改名
-      fs.rename(oldpath, newpath, function(err) {
-        if (err) {
-          res.json({ "status": "error", "code": "保存失败" });
-        } else {
-          res.json({ "status": "ok", "url": newpath });
+			var newpath = new mongoID() + extname;
+			
+			upload(newpath, oldpath, (respErr,respBody, respInfo) => {
+				if (respErr) {
+					res.json({ "status": "error", "code": "保存失败" });
         }
-      });
+        if (respInfo.statusCode == 200) {
+          fs.unlink(oldpath, (err) => {
+						if(err) {
+							console.log(err);
+						}
+          });
+					res.json({ "status": "ok", "url": `http://pa919xbba.bkt.clouddn.com/${respBody.key}` });
+        } else {
+          res.json({ "status": "error", "code": "保存失败" });
+        }
+			});
+
+
+
+
+
+      // // //改名
+      // fs.rename(oldpath, newpath, function(err) {
+      //   if (err) {
+      //     res.json({ "status": "error", "code": "保存失败" });
+      //   } else {
+      //     res.json({ "status": "ok", "url": newpath });
+      //   }
+      // });
     }
   });
 });

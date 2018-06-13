@@ -6,12 +6,13 @@
         default-active="1"
         class="el-menu-vertical"
         :collapse="isCollapse"
+        router
         :style="{'height': menuHeight + 'px'}">
         <el-menu-item index="1" route="/blogList/articleList">
           <i class="el-icon-document"></i>
           <span slot="title">文章管理</span>
         </el-menu-item>
-        <el-menu-item index="2">
+        <el-menu-item index="2" route="/blogList/tags">
           <i class="el-icon-menu"></i>
           <span slot="title">标签管理</span>
         </el-menu-item>

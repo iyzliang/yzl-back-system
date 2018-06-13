@@ -24,9 +24,9 @@
               <el-select v-model="item.tags" multiple placeholder="标签">
                  <el-option
                   v-for="item in options"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value">
+                  :key="item._id"
+                  :label="item.tag"
+                  :value="item.tag">
                 </el-option>
               </el-select>
             </el-form-item>
@@ -42,7 +42,7 @@
         </div>
       </div>
       <div class="markdownBox">
-        <mavon-editor class="markdown" :ishljs = "true"  @imgAdd="$imgAdd" :toolbars="toolbars" v-model="item.article"/>
+        <mavon-editor class="markdown" :ishljs = "true" ref="md" @imgAdd="$imgAdd" :toolbars="toolbars" v-model="item.article"/>
       </div>
       <div class="operation">
         <el-button type="danger" plain @click="$router.go(-1)">取消</el-button>
@@ -67,22 +67,7 @@
           article: ''
         },
         loadingSave: false,
-				options: [{
-					value: '选项1',
-					label: '黄金糕'
-        }, {
-					value: '选项2',
-					label: '双皮奶'
-        }, {
-					value: '选项3',
-					label: '蚵仔煎'
-        }, {
-					value: '选项4',
-					label: '龙须面'
-        }, {
-					value: '选项5',
-					label: '北京烤鸭'
-        }],
+				options: [],
 				toolbars: {
 					bold: true, // 粗体
 					italic: true, // 斜体
@@ -136,6 +121,9 @@
           }
         })
       }
+      Api.getTags({},(data) => {
+        this.options = data.data.data;
+      })
     },
 
 		methods: {
@@ -167,31 +155,19 @@
 			$imgAdd(pos, $file) {
 				// 第一步.将图片上传到服务器.
 				var formdata = new FormData();
-				formdata.append('image', $file);
-				axios({
-						url: 'server url',
-						method: 'post',
-						data: formdata,
-						headers: { 'Content-Type': 'multipart/form-data' },
-					})
-					.then((url) => {
-						// 第二步.将返回的url替换到文本原位置![...](./0) -> ![...](url)
-						/**
-						 * $vm 指为mavonEditor实例，可以通过如下两种方式获取
-						 * 1. 通过引入对象获取: `import {mavonEditor} from ...` 等方式引入后，`$vm`为`mavonEditor`
-						 * 2. 通过$refs获取: html声明ref : `<mavon-editor ref=md ></mavon-editor>，`$vm`为 `this.$refs.md`
-						 */
-						$vm.$img2Url(pos, url);
-					})
+        formdata.append('file', $file);
+        Api.uploadimg(formdata,(data) => {
+          this.$refs.md.$img2Url(pos, data.data.url);
+        })
       },
       
       saveFn () {
         this.loadingSave = true;
         var data = this.item;
         data.date = (new Date).getTime();
-        // if(this.id){
-        //   data.id = this.id;
-        // }
+        if(this.id){
+          data.id = this.id;
+        }
         Api.addArticle(data, (data) => {
           this.loadingSave = false;
           if(data.data.status == "ok") {

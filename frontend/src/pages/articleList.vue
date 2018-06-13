@@ -7,7 +7,7 @@
           <el-option label="简介" value="description"></el-option>
           <el-option label="标签" value="tags"></el-option>
         </el-select>
-        <el-button slot="append" icon="el-icon-search"></el-button>
+        <el-button slot="append" icon="el-icon-search" @click="getArticleList"></el-button>
       </el-input>
       <el-button type="primary" icon="el-icon-tickets" style="float:right;" @click="$router.push('articleEdit')">新建文章</el-button>
     </el-card>
@@ -45,7 +45,7 @@
         </el-table-column>
         <el-table-column prop="isshow" label="是否隐藏展示" align="center">
           <template slot-scope="scope">
-            <el-checkbox v-model="scope.row.isshow"></el-checkbox>
+            <el-checkbox v-model="scope.row.isshow" :disabled="true"></el-checkbox>
           </template>
         </el-table-column>
         <el-table-column fixed="right" label="操作" width="100" align="center">
@@ -95,6 +95,10 @@
         var data = {};
         if(page) {
           data = {page: page}
+        }
+        if(this.searchValue && this.searchType) {
+          data.q = this.searchValue;
+          data.qtype = this.searchType;
         }
         Api.getArticleList(data, (data) => {
         if(data.data.status == "ok") {

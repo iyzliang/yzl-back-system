@@ -75,4 +75,61 @@ api.getArticleList = (data, cd ,ecd) => {
     window.location.hash = '#/login';
   }
 }
+
+api.addTag = (data, cd, ecd) => {
+  if (localStorage.getItem('blog_token')) {
+    axios.post('/api/tag_blog', data, {
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + localStorage.getItem('blog_token')}
+     })
+    .then(cd)
+    .catch((err) => {
+      window.location.hash = '#/login'; 
+     });
+  } else {
+    window.location.hash = '#/login';
+  }
+}
+
+api.getTags = (data, cd, ecd) => {
+  if (localStorage.getItem('blog_token')) {
+    axios.get('/api/tag_blog', {
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + localStorage.getItem('blog_token')}
+     })
+    .then(cd)
+    .catch((err) => {
+      window.location.hash = '#/login'; 
+     });
+  } else {
+    window.location.hash = '#/login';
+  }
+}
+
+api.deleteTag = (data, cd, ecd) => {
+  if (localStorage.getItem('blog_token')) {
+    axios.delete('/api/tag_blog', {
+      data: data,
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + localStorage.getItem('blog_token')}
+    })
+    .then(cd)
+    .catch((err) => {
+      window.location.hash = '#/login'; 
+    });
+  } else {
+    window.location.hash = '#/login';
+  }
+}
+
+api.uploadimg = (data, cd, ecd) => {
+  if (localStorage.getItem('blog_token')) {
+    axios({
+      url: '/api/upload',
+      method: 'post',
+      data: data,
+      headers: { 'Content-Type': 'multipart/form-data', "Authorization": "Bearer " + localStorage.getItem('blog_token')},
+    })
+    .then(cd)
+  }else{
+    window.location.hash = '#/login';
+  }
+}
 export default api;

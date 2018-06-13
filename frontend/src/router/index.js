@@ -4,6 +4,7 @@ import login from '../pages/login.vue'
 import BlogList from '../pages/blogList.vue'
 import ArticleList from '../pages/articleList.vue'
 import ArticleEdit from '../pages/articleEdit.vue'
+import Tags from '../pages/tagsEdit.vue'
 
 Vue.use(Router)
 
@@ -33,6 +34,10 @@ export default new Router({
         {
           path: 'articleEdit',
           component: ArticleEdit 
+        },
+        {
+          path: 'tags',
+          component: Tags
         }
       ]
     }
